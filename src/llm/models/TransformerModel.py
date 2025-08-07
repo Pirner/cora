@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+from src.api.payloads import MessagePL
 from src.llm.models.config import LLMConfig
 
 
@@ -44,3 +45,23 @@ class TransformerModel:
         generated_tokens = self.model.generate(**inputs, max_new_tokens=512)
         outputs = self.tokenizer.decode(generated_tokens[0][inputs["input_ids"].shape[-1]:])
         return outputs
+
+    def process_messages(self, pl: MessagePL):
+        """
+        generate results given a message payload
+        :param pl: pl to crunch
+        :return:
+        """
+        json_tools = [x.model_dump_json() for x in pl.tools]
+        tool_dicts = [tool.dict() for tool in pl.tools]
+        text = self.tokenizer.apply_chat_template(
+            pl.messages,
+            tools=tool_dicts,
+            add_generation_prompt=True,
+            tokenize=False,
+            think=False
+        )
+        inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
+        outputs = self.model.generate(**inputs, max_new_tokens=512)
+        output_text = self.tokenizer.batch_decode(outputs)[0][len(text):]
+        return output_text
