@@ -24,7 +24,7 @@ class TransformerModel:
         assert self.config is not None
         print('[INFO] loading model {} started device: {}'.format(self.config.model_id, self.device))
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_path, device_map=self.device)
-        self.model = AutoModelForCausalLM.from_pretrained(self.config.model_path)
+        self.model = AutoModelForCausalLM.from_pretrained(self.config.model_path, device_map=self.device,)
         self.loaded = True
         print('[INFO] finished loading model {}'.format(self.config.model_id))
 
