@@ -61,6 +61,7 @@ def main():
 
 
     server_ip = 'http://localhost:8000'
+    server_ip = 'http://192.168.178.68:8000'
     url = '{}/message_generate'.format(server_ip)
     payload = {
         "model_id": "qwen3_0_6B",

@@ -21,9 +21,12 @@ class TransformerModel:
         loads the model with the given configuration
         :return:
         """
-        self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_path, device_map="cuda")
+        assert self.config is not None
+        print('[INFO] loading model {} started device: {}'.format(self.config.model_id, self.device))
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_path, device_map=self.device)
         self.model = AutoModelForCausalLM.from_pretrained(self.config.model_path)
         self.loaded = True
+        print('[INFO] finished loading model {}'.format(self.config.model_id))
 
     def generate(self, text: str):
         """
@@ -52,7 +55,6 @@ class TransformerModel:
         :param pl: pl to crunch
         :return:
         """
-        json_tools = [x.model_dump_json() for x in pl.tools]
         tool_dicts = [tool.dict() for tool in pl.tools]
         text = self.tokenizer.apply_chat_template(
             pl.messages,
