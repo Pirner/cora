@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import uvicorn
 
-from src.api.payloads import BaseGeneratePL, MessagePL
+from src.api.payloads import BaseGeneratePL, MessagePL, StructuredOutputPL
 from src.llm.models.utils import LLMModelUtils
 from src.llm.models.TransformerModel import TransformerModel
 
@@ -36,11 +36,23 @@ async def base_generate(pl: BaseGeneratePL):
         "outputs": outputs,
     }
 
+@app.post('/generate_structured_output')
+async def generate_structured_output(pl: StructuredOutputPL):
+    print('[Debug]', pl)
+    if not model.loaded:
+        model.load_model()
+    outputs = model.process_structured_output(pl=pl)
+    return {
+        'message': 'in construction',
+        'outputs': outputs,
+    }
+
 @app.post('/message_generate')
 async def message_generate(pl: MessagePL):
     """
-    process messages given by the system
-    :param pl:
+    process messages given by the system, this allows for memory and tool calling.
+    This should be the default go to for processing messages through the llm.
+    :param pl: payload for jinja style.
     :return:
     """
     if not model.loaded:

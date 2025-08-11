@@ -207,3 +207,6 @@ marimo/_lsp/
 __marimo__/
 .idea/
 .llm_configs/
+token.json
+**/*token.json
+**/*credentials.json

@@ -1,6 +1,8 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import outlines
+from outlines import Generator
 
-from src.api.payloads import MessagePL
+from src.api.payloads import MessagePL, StructuredOutputPL
 from src.llm.models.config import LLMConfig
 
 
@@ -67,3 +69,17 @@ class TransformerModel:
         outputs = self.model.generate(**inputs, max_new_tokens=512)
         output_text = self.tokenizer.batch_decode(outputs)[0][len(text):]
         return output_text
+
+    def process_structured_output(self, pl: StructuredOutputPL):
+        """
+        create structured output given a proper payload
+        :param pl: the api payload which holds the structure we shall output
+        :return:
+        """
+        model = outlines.from_transformers(
+            self.model,
+            self.tokenizer,
+        )
+        generator = Generator(model, pl.json_schema)
+        response = generator("How many countries are there in the world")
+        return response

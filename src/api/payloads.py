@@ -27,3 +27,9 @@ class MessagePL(BaseModel):
     model_id: str
     messages: List[Message]
     tools: Optional[List[Tool]] = None
+
+
+class StructuredOutputPL(BaseModel):
+    model_id: str
+    messages: List[Message]
+    json_schema: str

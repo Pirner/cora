@@ -56,7 +56,7 @@ TOOLS = [
 def main():
     messages = [
         {"role": "system", "content": "You are a helpful assistant.\n\nCurrent Date: 2024-08-31 /no_think"},
-        {"role": "user", "content": "What's the temperature in Nuremberg for the next 3 days?"},
+        {"role": "user", "content": "Whats the weather in Nuremberg tomorrow?"},
     ]
 
 
@@ -67,6 +67,7 @@ def main():
         "model_id": "qwen3_0_6B",
         "messages": messages,
         "tools": TOOLS,
+        # "tools": []
     }
 
     x = requests.post(url, json=payload)
