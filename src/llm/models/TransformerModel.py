@@ -57,7 +57,10 @@ class TransformerModel:
         :param pl: pl to crunch
         :return:
         """
-        tool_dicts = [tool.dict() for tool in pl.tools]
+        if pl.tools is not None:
+            tool_dicts = [tool.dict() for tool in pl.tools]
+        else:
+            tool_dicts = None
         text = self.tokenizer.apply_chat_template(
             pl.messages,
             tools=tool_dicts,
