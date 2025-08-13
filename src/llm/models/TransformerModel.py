@@ -18,6 +18,8 @@ class TransformerModel:
         self.loaded = False
         self.device = device
 
+        self.max_new_tokens = 2048
+
     def load_model(self):
         """
         loads the model with the given configuration
@@ -47,7 +49,7 @@ class TransformerModel:
             return_tensors="pt",
         ).to(self.model.device)
 
-        generated_tokens = self.model.generate(**inputs, max_new_tokens=512)
+        generated_tokens = self.model.generate(**inputs, max_new_tokens=self.max_new_tokens)
         outputs = self.tokenizer.decode(generated_tokens[0][inputs["input_ids"].shape[-1]:])
         return outputs
 
@@ -69,7 +71,7 @@ class TransformerModel:
             think=False
         )
         inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
-        outputs = self.model.generate(**inputs, max_new_tokens=512)
+        outputs = self.model.generate(**inputs, max_new_tokens=self.max_new_tokens)
         output_text = self.tokenizer.batch_decode(outputs)[0][len(text):]
         return output_text
 
