@@ -36,4 +36,8 @@ class StructuredOutputPL(BaseModel):
 
 
 class ChatMessage(BaseModel):
-    message: str
+    text: str
+    sender: Literal['user', 'agent']
+
+class ChatHistory(BaseModel):
+    history: List[ChatMessage]

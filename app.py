@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
-from src.api.payloads import BaseGeneratePL, MessagePL, StructuredOutputPL, ChatMessage
+from src.api.payloads import BaseGeneratePL, MessagePL, StructuredOutputPL, ChatHistory
 from src.llm.models.utils import LLMModelUtils
 from src.llm.models.TransformerModel import TransformerModel
 
@@ -33,13 +33,19 @@ async def get_chat_page(request: Request):
 
 
 @app.post("/chat")
-async def chat_with_agent(msg: ChatMessage):
-    user_input = msg.message
-    # Replace this with your actual agent logic
-    import time
-    time.sleep(5)
-    agent_response = f"You said: {user_input}"
-    return {"response": agent_response}
+async def chat_endpoint(chat: ChatHistory):
+    # chat.history is the full list of previous messages
+    # You can build your context here, e.g., concatenate or process them
+    context_text = "\n".join(f"{msg.sender}: {msg.text}" for msg in chat.history)
+    # print(chat)
+    # For demo: just echo back last user message reversed or a static reply
+    user_messages = [msg.text for msg in chat.history if msg.sender == 'user']
+    last_user_message = user_messages[-1] if user_messages else ""
+    user_chats = list(filter(lambda x: x.sender == 'user', chat.history))
+    # Your agent logic here, e.g., call an AI with context_text
+    response_text = f"Echo: {user_chats[-1].text}"
+
+    return {"response": response_text}
 
 
 @app.get('/query_models')

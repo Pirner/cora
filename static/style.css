@@ -18,7 +18,7 @@ h2 {
 #chat-box {
     border: 1px solid #333;
     background-color: #1e1e1e;
-    height: 80vh;           /* 80% of the viewport height */
+    height: 75vh;           /* 80% of the viewport height */
     width: 90%;
     max-width: 1000px;
     overflow-y: auto;
