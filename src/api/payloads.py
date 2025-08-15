@@ -33,3 +33,7 @@ class StructuredOutputPL(BaseModel):
     model_id: str
     messages: List[Message]
     json_schema: str
+
+
+class ChatMessage(BaseModel):
+    message: str

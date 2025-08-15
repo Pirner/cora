@@ -1,21 +1,44 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import uvicorn
 
-from src.api.payloads import BaseGeneratePL, MessagePL, StructuredOutputPL
+from src.api.payloads import BaseGeneratePL, MessagePL, StructuredOutputPL, ChatMessage
 from src.llm.models.utils import LLMModelUtils
 from src.llm.models.TransformerModel import TransformerModel
 
 
 app = FastAPI()
+
+# Serve static files (optional for CSS/JS)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+# Templates location
+templates = Jinja2Templates(directory="templates")
+
 model_configs = LLMModelUtils.read_all_llm_configs(config_directory=r'./.llm_configs')
 def_config = list(filter(lambda x: 'qwen3_0_6B' == x.model_id, model_configs))[0]
 print('[INFO] found {} model configs.'.format(len(model_configs)))
 model = TransformerModel(config=def_config)
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+# @app.get("/")
+# async def root():
+# return {"message": "Hello World"}
+
+# Show the HTML page at "/"
+@app.get("/", response_class=HTMLResponse)
+async def get_chat_page(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request})
+
+
+@app.post("/chat")
+async def chat_with_agent(msg: ChatMessage):
+    user_input = msg.message
+    # Replace this with your actual agent logic
+    agent_response = f"You said: {user_input}"
+    return {"response": agent_response}
+
 
 @app.get('/query_models')
 async def get_available():
