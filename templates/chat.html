@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Chat with Agent</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 
@@ -11,50 +11,112 @@
 
 <div id="chat-box"></div>
 
-<input type="text" id="input-box" placeholder="Type your message here..." />
-<button id="send-btn">Send</button>
+<div class="input-container">
+    <textarea id="input-box" placeholder="Type your message here..." rows="1" style="resize:none; overflow:hidden;"></textarea>
+    <button id="send-btn">Send</button>
+</div>
+
+<!-- Load marked.js once -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
 <script>
     const chatBox = document.getElementById('chat-box');
     const inputBox = document.getElementById('input-box');
     const sendBtn = document.getElementById('send-btn');
 
-    function addMessage(sender, text) {
-        const msg = document.createElement('div');
-        msg.classList.add('message');
-        msg.classList.add(sender);
-        msg.textContent = `${sender === 'user' ? 'You' : 'Agent'}: ${text}`;
-        chatBox.appendChild(msg);
+    const userAvatar = "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
+    const agentAvatar = "/static/robot.png";
+
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", sender);
+
+        const avatar = document.createElement("img");
+        avatar.src = sender === "user" ? userAvatar : agentAvatar;
+        avatar.className = "avatar";
+
+        const content = document.createElement("div");
+        content.className = "message-content";
+        // Render markdown safely - you can add DOMPurify or just trust marked for now
+        content.innerHTML = DOMPurify.sanitize(marked.parse(text));
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(content);
+
+        chatBox.appendChild(messageDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    let typingMessageDiv = null;
 
     async function sendMessage() {
         const userMessage = inputBox.value.trim();
         if (!userMessage) return;
 
-        addMessage('user', userMessage);
+        addMessage(userMessage, 'user');
         inputBox.value = '';
+        autoResizeTextarea(inputBox); // reset input height if you use auto resize
+
+        // Show typing indicator
+        typingMessageDiv = document.createElement("div");
+        typingMessageDiv.classList.add("message", "agent");
+
+        const avatar = document.createElement("img");
+        avatar.src = agentAvatar;
+        avatar.className = "avatar";
+
+        const content = document.createElement("div");
+        content.className = "message-content typing-dots";
+        content.innerHTML = "Agent is typing<span>.</span><span>.</span><span>.</span>";
+
+        typingMessageDiv.appendChild(avatar);
+        typingMessageDiv.appendChild(content);
+
+        chatBox.appendChild(typingMessageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
             const response = await fetch('/chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMessage })
             });
 
             const data = await response.json();
-            addMessage('agent', data.response);
+
+            // Remove typing indicator
+            if (typingMessageDiv) {
+                chatBox.removeChild(typingMessageDiv);
+                typingMessageDiv = null;
+            }
+
+            addMessage(data.response, 'agent');
         } catch (error) {
-            console.error('Error communicating with agent:', error);
-            addMessage('agent', '[Error connecting to agent]');
+            console.error('Error:', error);
+
+            if (typingMessageDiv) {
+                chatBox.removeChild(typingMessageDiv);
+                typingMessageDiv = null;
+            }
+
+            addMessage('_[Error connecting to agent]_', 'agent');
         }
     }
+
 
     sendBtn.addEventListener('click', sendMessage);
     inputBox.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') sendMessage();
+    });
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';           // Reset height
+      el.style.height = el.scrollHeight + 'px';  // Set height to scrollHeight
+    }
+
+    inputBox.addEventListener('input', () => {
+      autoResizeTextarea(inputBox);
     });
 </script>
 

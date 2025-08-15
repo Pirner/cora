@@ -36,6 +36,8 @@ async def get_chat_page(request: Request):
 async def chat_with_agent(msg: ChatMessage):
     user_input = msg.message
     # Replace this with your actual agent logic
+    import time
+    time.sleep(5)
     agent_response = f"You said: {user_input}"
     return {"response": agent_response}
 

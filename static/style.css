@@ -1,31 +1,156 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 30px;
-    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: #f1f1f1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
 }
+
+h2 {
+    margin: 20px 0;
+    color: #ffffff;
+}
+
 #chat-box {
-    border: 1px solid #ccc;
-    background-color: #fff;
-    height: 400px;
-    width: 100%;
-    max-width: 600px;
-    overflow-y: scroll;
-    padding: 10px;
-    margin-bottom: 10px;
+    border: 1px solid #333;
+    background-color: #1e1e1e;
+    height: 80vh;           /* 80% of the viewport height */
+    width: 90%;
+    max-width: 1000px;
+    overflow-y: auto;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
 }
+
 .message {
-    margin: 5px 0;
+    display: flex;
+    align-items: flex-start;
+    margin: 6px 0; /* ↓ smaller vertical spacing */
+    gap: 8px;       /* ↓ smaller gap between avatar and bubble */
+    max-width: 100%;
 }
-.user {
-    color: blue;
-}
+
+/* Agent message (default: avatar left, content right) */
 .agent {
-    color: green;
+    flex-direction: row;
+    justify-content: flex-start;
 }
+
+/* User message: avatar on right, content on left, aligned to right */
+.user {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.message-content {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    max-width: 350px;
+    min-width: 40px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+/* Message bubble colors */
+.user .message-content {
+    background-color: #2e6de6;
+    color: white;
+    text-align: right;
+    margin-left: auto; /* 👈 Push bubble to the right */
+}
+
+.agent .message-content {
+    background-color: #333;
+    color: #d4d4d4;
+    text-align: left;
+}
+
+/* Input container */
+.input-container {
+    width: 90%;
+    max-width: 1000px;
+    display: flex;
+    justify-content: flex-end;  /* Align to right */
+    align-items: center;
+    margin-bottom: 40px;
+    gap: 10px;
+}
+
 #input-box {
-    width: 80%;
-    padding: 10px;
+  width: 70%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  color: white;
+  margin-right: 10px;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.3;
+  resize: none;          /* disable manual resize */
+  overflow: hidden;      /* hide scrollbar */
 }
+
 #send-btn {
     padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#send-btn:hover {
+    background-color: #45a049;
+}
+
+.typing-dots {
+  display: inline-block;
+  font-weight: bold;
+  color: #aaa;
+}
+
+.typing-dots span {
+  animation-name: blink;
+  animation-duration: 1.4s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  font-size: 1.2em;
+  margin-left: 2px;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%, 80%, 100% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
 }
