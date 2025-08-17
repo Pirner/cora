@@ -41,3 +41,20 @@ class ChatMessage(BaseModel):
 
 class ChatHistory(BaseModel):
     history: List[ChatMessage]
+
+    def convert_to_messages(self) -> List[Message]:
+        """
+        converts the history into the jinja format for the llm to consume
+        :return:
+        """
+        ret = []
+        for c_msg in self.history:
+            if c_msg.sender == 'user':
+                role = 'user'
+            elif c_msg.sender == 'agent':
+                role = 'assistant'
+            else:
+                raise Exception('Unknown user type', c_msg.sender)
+            msg = Message(role=role, content=c_msg.text)
+            ret.append(msg)
+        return ret

@@ -2,7 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import outlines
 from outlines import Generator
 
-from src.api.payloads import MessagePL, StructuredOutputPL
+from src.api.payloads import MessagePL, StructuredOutputPL, ChatHistory
 from src.llm.models.config import LLMConfig
 
 
@@ -31,6 +31,26 @@ class TransformerModel:
         self.model = AutoModelForCausalLM.from_pretrained(self.config.model_path, device_map=self.device,)
         self.loaded = True
         print('[INFO] finished loading model {}'.format(self.config.model_id))
+
+    def process_chat(self, chat: ChatHistory):
+        """
+        process the information from the chat
+        :param chat: history of the chat
+        :return:
+        """
+        # convert into a list of messages
+        messages = chat.convert_to_messages()
+        text = self.tokenizer.apply_chat_template(
+            messages,
+            # tools=tool_dicts,
+            add_generation_prompt=True,
+            tokenize=False,
+            think=False
+        )
+        inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
+        outputs = self.model.generate(**inputs, max_new_tokens=self.max_new_tokens)
+        output_text = self.tokenizer.batch_decode(outputs)[0][len(text):]
+        return output_text
 
     def generate(self, text: str):
         """

@@ -36,14 +36,17 @@ async def get_chat_page(request: Request):
 async def chat_endpoint(chat: ChatHistory):
     # chat.history is the full list of previous messages
     # You can build your context here, e.g., concatenate or process them
-    context_text = "\n".join(f"{msg.sender}: {msg.text}" for msg in chat.history)
+    # context_text = "\n".join(f"{msg.sender}: {msg.text}" for msg in chat.history)
     # print(chat)
     # For demo: just echo back last user message reversed or a static reply
-    user_messages = [msg.text for msg in chat.history if msg.sender == 'user']
-    last_user_message = user_messages[-1] if user_messages else ""
-    user_chats = list(filter(lambda x: x.sender == 'user', chat.history))
+    # user_messages = [msg.text for msg in chat.history if msg.sender == 'user']
+    # last_user_message = user_messages[-1] if user_messages else ""
+    # user_chats = list(filter(lambda x: x.sender == 'user', chat.history))
     # Your agent logic here, e.g., call an AI with context_text
-    response_text = f"Echo: {user_chats[-1].text}"
+    # response_text = f"Echo: {user_chats[-1].text}"
+    if not model.loaded:
+        model.load_model()
+    response_text = model.process_chat(chat=chat)
 
     return {"response": response_text}
 
