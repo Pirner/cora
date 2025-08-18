@@ -18,7 +18,7 @@ class TransformerModel:
         self.loaded = False
         self.device = device
 
-        self.max_new_tokens = 2048
+        self.max_new_tokens = 512
 
     def load_model(self):
         """
