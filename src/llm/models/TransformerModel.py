@@ -1,4 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import Mistral3ForConditionalGeneration
 import outlines
 from outlines import Generator
 import torch
@@ -27,22 +28,39 @@ class TransformerModel:
         :return:
         """
         assert self.config is not None
+        compute_dtype = torch.bfloat16
         print('[INFO] loading model {} started device: {}'.format(self.config.model_id, self.device))
         quant_config = BitsAndBytesConfig(
             load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",  # Normalized Float 4 (high precision)
-            bnb_4bit_compute_dtype=torch.float16,  # Speeds up computation
-            bnb_4bit_use_double_quant=True  # Second pass of quantization to save more RAM
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=compute_dtype,
+            bnb_4bit_use_double_quant=True,
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_path, device_map=self.device)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.config.model_path,
-            device_map=self.device,
-            quantization_config=quant_config,
-        )
+        if 'mistral' in self.config.model_id and '3' in self.config.model_id:
+            print('[INFO] detected mistral 3 model')
+            self.model = Mistral3ForConditionalGeneration.from_pretrained(
+                self.config.model_path,
+                quantization_config=quant_config,
+                device_map="auto",
+                max_memory={0: "20GiB", "cpu": "32GiB"},  # Hard cap for GPU 0
+                torch_dtype=torch.bfloat16,
+                low_cpu_mem_usage=True,
+                trust_remote_code=True,
+                offload_folder="offload",  # In case it needs a temporary swap on disk
+            )
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.config.model_path,
+                device_map=self.device,
+                quantization_config=quant_config,
+            )
         self.loaded = True
         print('[INFO] finished loading model {}'.format(self.config.model_id))
+        allocated = torch.cuda.memory_allocated() / 1024 ** 3
+        reserved = torch.cuda.memory_reserved() / 1024 ** 3
+        print(f'[INFO] Done! VRAM Allocated: {allocated:.2f} GB | Reserved: {reserved:.2f} GB')
 
     def process_chat(self, chat: ChatHistory):
         """
