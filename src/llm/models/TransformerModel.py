@@ -1,6 +1,7 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import outlines
 from outlines import Generator
+import torch
 
 from src.api.payloads import MessagePL, StructuredOutputPL, ChatHistory
 from src.llm.models.config import LLMConfig
@@ -27,8 +28,19 @@ class TransformerModel:
         """
         assert self.config is not None
         print('[INFO] loading model {} started device: {}'.format(self.config.model_id, self.device))
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",  # Normalized Float 4 (high precision)
+            bnb_4bit_compute_dtype=torch.float16,  # Speeds up computation
+            bnb_4bit_use_double_quant=True  # Second pass of quantization to save more RAM
+        )
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_path, device_map=self.device)
-        self.model = AutoModelForCausalLM.from_pretrained(self.config.model_path, device_map=self.device,)
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.config.model_path,
+            device_map=self.device,
+            quantization_config=quant_config,
+        )
         self.loaded = True
         print('[INFO] finished loading model {}'.format(self.config.model_id))
 
