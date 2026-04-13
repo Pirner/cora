@@ -10,6 +10,7 @@ from src.llm.models.TransformerModel import TransformerModel
 
 
 app = FastAPI()
+model_name = 'mistral_small_3_24B'
 
 # Serve static files (optional for CSS/JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -17,7 +18,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 model_configs = LLMModelUtils.read_all_llm_configs(config_directory=r'./.llm_configs')
-def_config = list(filter(lambda x: 'mistral_small_3_24B' == x.model_id, model_configs))[0]
+def_config = list(filter(lambda x: model_name == x.model_id, model_configs))[0]
 print('[INFO] found {} model configs.'.format(len(model_configs)))
 model = TransformerModel(config=def_config)
 

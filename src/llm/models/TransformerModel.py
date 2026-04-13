@@ -36,6 +36,12 @@ class TransformerModel:
             bnb_4bit_compute_dtype=compute_dtype,
             bnb_4bit_use_double_quant=True,
         )
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True
+        )
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_path, device_map=self.device)
         if 'mistral' in self.config.model_id and '3' in self.config.model_id:
