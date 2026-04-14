@@ -20,7 +20,7 @@ class TransformerModel:
         self.loaded = False
         self.device = device
 
-        self.max_new_tokens = 512
+        self.max_new_tokens = 131072
 
     def load_model(self):
         """
@@ -55,6 +55,15 @@ class TransformerModel:
                 low_cpu_mem_usage=True,
                 trust_remote_code=True,
                 offload_folder="offload",  # In case it needs a temporary swap on disk
+            )
+        elif 'qwen_3_coder' in self.config.model_id or 'awq' in self.config.model_id.lower():
+            print('[INFO] detected qwen 3 coder model')
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.config.model_path,
+                device_map="auto",  # Use "auto" so it manages your 4090 properly
+                torch_dtype="auto",  # Let it pick the correct dtype (likely float16 or bfloat16)
+                trust_remote_code=True,
+                attn_implementation="sdpa"  # Essential to avoid your previous Flash-Attn error
             )
         else:
             self.model = AutoModelForCausalLM.from_pretrained(

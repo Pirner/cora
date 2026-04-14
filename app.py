@@ -11,6 +11,7 @@ from src.llm.models.TransformerModel import TransformerModel
 
 app = FastAPI()
 model_name = 'mistral_small_3_24B'
+model_name = 'qwen_2_5_coder_32b_instruct_awq'
 
 # Serve static files (optional for CSS/JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
