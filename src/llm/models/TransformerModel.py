@@ -1,5 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-from transformers import Mistral3ForConditionalGeneration
+# from transformers import Mistral3ForConditionalGeneration
 import outlines
 from outlines import Generator
 import torch
@@ -44,33 +44,16 @@ class TransformerModel:
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_path, device_map=self.device)
-        if 'mistral' in self.config.model_id and '3' in self.config.model_id:
-            print('[INFO] detected mistral 3 model')
-            self.model = Mistral3ForConditionalGeneration.from_pretrained(
-                self.config.model_path,
-                quantization_config=quant_config,
-                device_map="auto",
-                max_memory={0: "20GiB", "cpu": "32GiB"},  # Hard cap for GPU 0
-                torch_dtype=torch.bfloat16,
-                low_cpu_mem_usage=True,
-                trust_remote_code=True,
-                offload_folder="offload",  # In case it needs a temporary swap on disk
-            )
-        elif 'qwen_3_coder' in self.config.model_id or 'awq' in self.config.model_id.lower():
-            print('[INFO] detected qwen 3 coder model')
-            self.model = AutoModelForCausalLM.from_pretrained(
-                self.config.model_path,
-                device_map="auto",  # Use "auto" so it manages your 4090 properly
-                torch_dtype="auto",  # Let it pick the correct dtype (likely float16 or bfloat16)
-                trust_remote_code=True,
-                attn_implementation="sdpa"  # Essential to avoid your previous Flash-Attn error
-            )
-        else:
-            self.model = AutoModelForCausalLM.from_pretrained(
-                self.config.model_path,
-                device_map=self.device,
-                quantization_config=quant_config,
-            )
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.config.model_path,
+            quantization_config=quant_config,
+            device_map="auto",
+            max_memory={0: "20GiB", "cpu": "32GiB"},  # Hard cap for GPU 0
+            torch_dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True,
+            offload_folder="offload",  # In case it needs a temporary swap on disk
+        )
         self.loaded = True
         print('[INFO] finished loading model {}'.format(self.config.model_id))
         allocated = torch.cuda.memory_allocated() / 1024 ** 3
